@@ -35,9 +35,14 @@ from common import data_loader
 from common import modeling
 from common import shared_config
 from common import utils
+from common.template import OPEN_SOURCE_TEMPLATE
 from main import config as main_config
 from main import methods
 # pylint: enable=g-bad-import-order
+
+import openai
+
+openai.api_base = 'https://hb.rcouyi.com/v1'
 
 _HEADERS = (f'Side 1: {main_config.side_1}', f'Side 2: {main_config.side_2}')
 _PROMPT = 'prompt'
@@ -51,8 +56,8 @@ _PER_PROMPT_DATA = 'per_prompt_data'
 _TOTAL_RUNTIME = 'total_runtime'
 
 OUT_PATH = os.path.join(
-    shared_config.path_to_result,
-    datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '.json',
+    shared_config.path_to_result, main_config.task_short,
+    main_config.responder_model_short+'-'+datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '.json',
 )
 
 
@@ -246,11 +251,21 @@ def main(_) -> None:
   utils.print_info(f'Saving results to:\n{OUT_PATH}', add_punctuation=False)
   start_time = time.time()
 
+  if main_config.responder_model in OPEN_SOURCE_TEMPLATE:
+    path = os.path.join(main_config.path,main_config.responder_model)
+    device = main_config.device
+  else:
+    path = None
+    device = None
+
   responder = modeling.Model(
       model_name=main_config.responder_model,
+      temperature=0.1,
       max_tokens=1024,
       show_responses=main_config.show_responder_responses,
       show_prompts=main_config.show_responder_prompts,
+      path = path,
+      device = device
   )
   print_config('Responder', responder)
 

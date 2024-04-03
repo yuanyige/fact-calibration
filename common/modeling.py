@@ -20,6 +20,8 @@ import os
 import threading
 import time
 from typing import Any, Annotated, Optional
+import torch
+import transformers
 
 import anthropic
 import langfun as lf
@@ -30,6 +32,9 @@ import pyglove as pg
 from common import modeling_utils
 from common import shared_config
 from common import utils
+from common.template import OPEN_SOURCE_TEMPLATE, split_response
+
+from transformers import AutoTokenizer, AutoModelForCausalLM
 # pylint: enable=g-bad-import-order
 
 _DEBUG_PRINT_LOCK = threading.Lock()
@@ -170,6 +175,8 @@ class Model:
       max_tokens: int = 2048,
       show_responses: bool = False,
       show_prompts: bool = False,
+      path: str = None,
+      device: str = None,
   ) -> None:
     """Initializes a model."""
     self.model_name = model_name
@@ -177,10 +184,12 @@ class Model:
     self.max_tokens = max_tokens
     self.show_responses = show_responses
     self.show_prompts = show_prompts
-    self.model = self.load(model_name, self.temperature, self.max_tokens)
+    self.path = path
+    self.device = device
+    self.model = self.load(model_name, self.temperature, self.max_tokens, self.path, self.device)
 
   def load(
-      self, model_name: str, temperature: float, max_tokens: int
+      self, model_name: str, temperature: float, max_tokens: int, path: str, device:str
   ) -> lf.LanguageModel:
     """Loads a language model from string representation."""
     sampling = lf.LMSamplingOptions(
@@ -207,6 +216,12 @@ class Model:
           api_key=shared_config.anthropic_api_key,
           sampling_options=sampling,
       )
+    
+    elif model_name in OPEN_SOURCE_TEMPLATE:
+      model = AutoModelForCausalLM.from_pretrained(path).to(device)
+      tokenizer = AutoTokenizer.from_pretrained(path)
+      return {"model":model, "tokenizer":tokenizer}
+    
     elif 'unittest' == model_name.lower():
       return lf.llms.Echo()
     else:
@@ -223,38 +238,53 @@ class Model:
       retry_interval: int = 10,
   ) -> str:
     """Generates a response to a prompt."""
-    self.model.max_attempts = 1
-    self.model.retry_interval = 0
-    self.model.timeout = timeout
     prompt = modeling_utils.add_format(prompt, self.model, self.model_name)
-    gen_temp = temperature or self.temperature
-    gen_max_tokens = max_tokens or self.max_tokens
-    response, num_attempts = '', 0
+    if self.model_name in OPEN_SOURCE_TEMPLATE:
+        model = self.model["model"]
+        tokenizer = self.model["tokenizer"]
+        chat_template = open('./third_party/chat_templates/{}.jinja'.format(OPEN_SOURCE_TEMPLATE[self.model_name])).read()
+        chat_template = chat_template.replace('    ', '').replace('\n', '')
+        tokenizer.chat_template = chat_template
+        chat_prompt=tokenizer.apply_chat_template([{'role': 'user', 'content': prompt}], tokenize=False, add_generation_prompt=True)
+        #chat_prompt = TEMPLATE_LLAMA2_CHAT.format(task_instruction=prompt)
+        #print("chat_prompt",chat_prompt)
+        model_inputs = tokenizer([chat_prompt],return_tensors="pt",add_special_tokens=False).input_ids.to(self.device)
+        generate_ids = model.generate(input_ids=model_inputs, do_sample=True, temperature=self.temperature, max_new_tokens=256) # 
+        generated_answer = tokenizer.decode(generate_ids[0])
+        response = split_response(self.model_name, generated_answer, chat_prompt)
+        # response = generated_answer.split("[/INST]")[-1].strip().split('</s>')[0]
+    else:
+      self.model.max_attempts = 1
+      self.model.retry_interval = 0
+      self.model.timeout = timeout
+      gen_temp = temperature or self.temperature
+      gen_max_tokens = max_tokens or self.max_tokens
+      response, num_attempts = '', 0
 
-    with modeling_utils.get_lf_context(gen_temp, gen_max_tokens):
-      while not response and num_attempts < max_attempts:
-        with futures.ThreadPoolExecutor() as executor:
-          future = executor.submit(lf.LangFunc(prompt, lm=self.model))
+      with modeling_utils.get_lf_context(gen_temp, gen_max_tokens):
+        while not response and num_attempts < max_attempts:
+          with futures.ThreadPoolExecutor() as executor:
+            future = executor.submit(lf.LangFunc(prompt, lm=self.model))
 
-          try:
-            response = future.result(timeout=timeout).text
-          except (
-              openai.error.OpenAIError,
-              futures.TimeoutError,
-              lf.core.concurrent.RetryError,
-              anthropic.AnthropicError,
-          ) as e:
-            utils.maybe_print_error(e)
-            time.sleep(retry_interval)
+            try:
+              response = future.result(timeout=timeout).text
+            except (
+                openai.error.OpenAIError,
+                futures.TimeoutError,
+                lf.core.concurrent.RetryError,
+                anthropic.AnthropicError,
+            ) as e:
+              utils.maybe_print_error(e)
+              time.sleep(retry_interval)
 
-        num_attempts += 1
+          num_attempts += 1
 
-    if do_debug:
-      with _DEBUG_PRINT_LOCK:
-        if self.show_prompts:
-          utils.print_color(prompt, 'magenta')
-        if self.show_responses:
-          utils.print_color(response, 'cyan')
+      if do_debug:
+        with _DEBUG_PRINT_LOCK:
+          if self.show_prompts:
+            utils.print_color(prompt, 'magenta')
+          if self.show_responses:
+            utils.print_color(response, 'cyan')
 
     return response
 
@@ -265,6 +295,8 @@ class Model:
         'max_tokens': self.max_tokens,
         'show_responses': self.show_responses,
         'show_prompts': self.show_prompts,
+        'path' : self.path,
+        'device' : self.device
     }
     print(utils.to_readable_json(settings))
 

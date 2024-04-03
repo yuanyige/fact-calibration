@@ -50,7 +50,14 @@ model_options = {
     'claude_21': 'ANTHROPIC:claude-2.1',
     'claude_20': 'ANTHROPIC:claude-2.0',
     'claude_instant': 'ANTHROPIC:claude-instant-1.2',
+    'llama_2_7b': 'Llama-2-7b-chat-hf',
+    'llama_2_13b': 'Llama-2-13b-chat-hf',
+    'llama_2_70b': 'Llama-2-70b-chat-hf',
+    'vicuna-7b': 'vicuna-7b-v1.5',
+    'vicuna-13b': 'vicuna-13b-v1.5',
+    'mistral-7b': 'Mistral-7B-Instruct-v0.2',
 }
+
 model_string = {
     'gpt_4_turbo': 'gpt4turbo',
     'gpt_4': 'gpt4',

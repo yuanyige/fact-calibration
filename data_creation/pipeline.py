@@ -37,6 +37,10 @@ from data_creation import config as data_creation_config
 from data_creation import generate_data
 # pylint: enable=g-bad-import-order
 
+import openai
+
+openai.api_base = 'https://hb.rcouyi.com/v1'
+
 _FORCE_OUTPUT_DIR = flags.DEFINE_string(
     name='force_output_dir',
     default=None,

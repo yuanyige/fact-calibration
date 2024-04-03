@@ -51,9 +51,21 @@ save_results = True
 #     'claude_21',
 #     'claude_20',
 #     'claude_instant',
+#     'llama_2_7b',
+#     'llama_2_13b',
+#     'llama_2_70b',
+#     'vicuna-7b',
+#     'vicuna-13b',
+#     'mistral-7b',
 # ]
 ################################################################################
-responder_model_short = 'gpt_35_turbo'
+# responder_model_short = 'gpt_35_turbo'
+# path = None
+# device = None
+
+responder_model_short = 'mistral-7b'
+path = ''
+device = 'cuda:0'
 
 ################################################################################
 #                               DEBUG SETTINGS
@@ -78,8 +90,8 @@ show_responder_responses = False
 # Old LongFact versions can be used by setting `task` to their directory.
 ################################################################################
 task_short = 'longfact_objects'
-shuffle_data = True
-max_num_examples = 250
+shuffle_data = False
+max_num_examples = 1200
 add_universal_postamble = True
 
 ################################################################################
@@ -88,11 +100,11 @@ add_universal_postamble = True
 # num_sentences: int = how many sentences to limit the response to.
 # response_length_postamble: str = formatting prompt for fixing response length.
 ################################################################################
-use_length_ablation = False
+use_length_ablation = True
 num_sentences = 1
 response_length_postamble = (
     f'Respond in exactly {num_sentences} sentences.' if num_sentences > 1
-    else 'Respond in exactly 1 sentence.'
+    else 'Respond in exactly 1 sentence, and keep it within 200 characters.'
 )
 
 

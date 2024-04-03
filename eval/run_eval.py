@@ -18,12 +18,7 @@ The eval result of each prompt can be accessed in the way of
 
 Usage:
 ```
-python -m eval.run_eval \
-    --result_path=<path_to_result> \
-    --eval_side1=True \
-    --eval_side2=True \
-    --parallelize=True \
-    --max_claim=-1
+python -m eval.run_eval --result_path=<path_to_result> --eval_side1=True --eval_side2=True --parallelize=True --max_claim=-1
 ```
 """
 
@@ -47,6 +42,12 @@ from eval import metric_utils
 from eval.safe import config as safe_config
 from eval.safe import search_augmented_factuality_eval as safe
 # pylint: enable=g-bad-import-order
+
+import openai
+
+openai.api_base = 'https://hb.rcouyi.com/v1'
+os.environ["HTTP_PROXY"] = "http://10.61.3.12:7788"
+os.environ["HTTPS_PROXY"] = "http://10.61.3.12:7788"
 
 _RESULT_PATH = flags.DEFINE_string(
     'result_path', '', 'Path to the result file to eval.'
@@ -94,7 +95,7 @@ def add_rating(
           response=prompt_result_rated[f'{side}_response'],
           rater=rater_model,
       )
-
+    # print("here E prompt_result_rated", prompt_result_rated)
   return prompt_result_rated
 
 
@@ -126,7 +127,7 @@ def evaluate_data(
     for prompt_data_and_index, result, error in lf.concurrent_map(
         add_rating_wrapped,
         [(item, i) for i, item in enumerate(result_data[_PER_PROMPT_DATA])],
-        max_workers=25,
+        max_workers=5,
         show_progress=show_progress_bar,
     ):
       if error or not result:
@@ -139,6 +140,11 @@ def evaluate_data(
           utils.save_json(out_path, result_data)
   else:
     for i, prompt_result in enumerate(result_data[_PER_PROMPT_DATA]):
+      # if i<2:
+      #   print("pass:",i)
+      #   continue
+      if i==90:
+        break
       prompt_result_rated = add_rating_wrapped((prompt_result, i))
       result_data[_PER_PROMPT_DATA][i] = prompt_result_rated
       utils.save_json(out_path, result_data)
@@ -200,10 +206,19 @@ def main(_) -> None:
   utils.print_info(f'Evaluate `side 1` response: {_EVAL_SIDE1.value}')
   utils.print_info(f'Evaluate `side 2` response: {_EVAL_SIDE2.value}')
   out_folder = shared_config.path_to_result
+  
+  be_evaluated_file_name = _RESULT_PATH.value.split('/')[-1].replace(".json","")
+  # print(evaluate_file_name)
+  # exit(0)
+
   out_name = (
-      datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '-SAFE.json'
+      be_evaluated_file_name + '_SAFE_' + datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '.json'
   )
   out_path = os.path.join(out_folder, out_name)
+
+  # print(out_path)
+  # exit(0)
+
   utils.print_info(f'Saving result to:\n{out_path}', add_punctuation=False)
 
   result_data = utils.read_json(_RESULT_PATH.value)

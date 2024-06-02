@@ -34,9 +34,9 @@ prompt_postamble = """\
 Provide as many specific details and examples as possible (such as names of \
 people, numbers, events, locations, dates, times, etc.)
 """
-openai_api_key = ''
+openai_api_key = 'sk-Jx2ofLvAjiwJ7424520b16E4E1D543Df96D448F0243c5376' #'sk-sOGn1qPx9BfYXBsI1802A4191dC640E081B9183b8e200899' #
 anthropic_api_key = ''
-serper_api_key = ''
+serper_api_key = 'e5b6022e29be2b57b677ab842b228ced17aca7f7'
 random_seed = 1
 model_options = {
     'gpt_4_turbo': 'OPENAI:gpt-4-0125-preview',
@@ -53,9 +53,10 @@ model_options = {
     'llama_2_7b': 'Llama-2-7b-chat-hf',
     'llama_2_13b': 'Llama-2-13b-chat-hf',
     'llama_2_70b': 'Llama-2-70b-chat-hf',
-    'vicuna-7b': 'vicuna-7b-v1.5',
+    'vicuna-7b':  'vicuna-7b-v1.5',
     'vicuna-13b': 'vicuna-13b-v1.5',
     'mistral-7b': 'Mistral-7B-Instruct-v0.2',
+    'longchat-7b': 'longchat-7b-v1.5-32k',
 }
 
 model_string = {

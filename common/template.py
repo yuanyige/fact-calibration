@@ -9,6 +9,7 @@ OPEN_SOURCE_TEMPLATE={
     'vicuna-7b-v1.5':'vicuna',
     'vicuna-13b-v1.5':'vicuna',
     'Mistral-7B-Instruct-v0.2': 'mistral-instruct',
+    'longchat-7b-v1.5-32k':'vicuna'
 }
 
 def split_response(model_name, response, prompt=None):

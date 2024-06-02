@@ -10,15 +10,15 @@ from common import utils
 from common.template import OPEN_SOURCE_TEMPLATE
 from main import config as main_config
 from main import methods
-from main.confidence_prompt import SELF_CONF_FORMAT, CRITERION
+from main.prompt import SELF_CONF_FORMAT_CONTINUE, WHOLE_SELF_CONF_FORMAT_CONTINUE, CRITERION_CONTINUE
 
 openai.api_base = 'https://hb.rcouyi.com/v1'
 os.environ["HTTP_PROXY"] = "http://10.61.3.12:7788"
 os.environ["HTTPS_PROXY"] = "http://10.61.3.12:7788"
 
-SAFE_result_path='./results/90-llama_2_7b_SAFE.json'
+SAFE_result_path='./results/asqa/vicuna-13b_SAFE.json'
 
-# resume_result_path = './results/selfconf-llama_2_7b.json'
+# resume_result_path = './results/llama_2_13b_FACT_CONF.json'
 resume_result_path = None
 RESUME_BREAK_POINT = None
 
@@ -26,8 +26,12 @@ def check_model_consistency(model_name, path):
     path = path.split("/")[-1].split("_SAFE")[0]
     if path == model_name:
         print("Consistency Checked")
+        print(path)
+        print(model_name)
     else:
         print("Error: Not Consistent")
+        print(path)
+        print(model_name)
         exit(0)
 
 def print_config(model_name: str, model: modeling.Model) -> None:
@@ -37,7 +41,30 @@ def print_config(model_name: str, model: modeling.Model) -> None:
   print()
 
 
-# check_model_consistency(main_config.responder_model_short, SAFE_result_path)
+with open(SAFE_result_path, 'r') as file:
+    json_data = json.load(file)
+
+# for i, data in enumerate(json_data["per_prompt_data"]):
+#     try:
+#         print("========")
+#         print(i)
+#         data_dict={}
+#         question = data["side2_posthoc_eval_data"]["prompt"]
+#         response = data["side2_posthoc_eval_data"]["response"]
+#         checked_statements = data["side2_posthoc_eval_data"]["checked_statements"]
+#         print(response)
+#         statements_list=[]
+#         for item in checked_statements:
+#             fact_dict = {}
+#             fact = item["self_contained_atomic_fact"]
+#             relevance = re.compile(r'Not Foo|Foo').search(item["relevance_data"]["is_relevant"]).group()
+#             correctness = item["annotation"]
+#             print(f"{fact} Is Relevant: {relevance}, Annotation: {correctness}")
+#     except:
+#         exit(0)
+# exit(0)
+
+check_model_consistency(main_config.responder_model_short, SAFE_result_path)
 
 if main_config.responder_model in OPEN_SOURCE_TEMPLATE:
     path = os.path.join(main_config.path,main_config.responder_model)
@@ -57,32 +84,6 @@ responder = modeling.Model(
     device = device
 )
 print_config('Responder', responder)
-
-
-with open(SAFE_result_path, 'r') as file:
-    json_data = json.load(file)
-
-# print(json_data["per_prompt_data"][29])
-# exit(0)
-
-# for i, data in enumerate(json_data["per_prompt_data"]):
-#     try:
-#         print(i)
-#         data_dict={}
-#         question = data["side2_posthoc_eval_data"]["prompt"]
-#         response = data["side2_posthoc_eval_data"]["response"]
-#         checked_statements = data["side2_posthoc_eval_data"]["checked_statements"]
-
-#         statements_list=[]
-#         for item in checked_statements:
-#             fact_dict = {}
-#             fact = item["self_contained_atomic_fact"]
-#             relevance = re.compile(r'Not Foo|Foo').search(item["relevance_data"]["is_relevant"]).group()
-#             correctness = item["annotation"]
-#             print(f"{fact} Is Relevant: {relevance}, Annotation: {correctness}")
-#     except:
-#         exit(0)
-# exit(0)
 
 
 if resume_result_path:
@@ -150,10 +151,12 @@ for index, data in enumerate(json_data["per_prompt_data"]):
 
         for _ in range(10):
             try:
-                self_confidence_prompt = SELF_CONF_FORMAT.format(criterion=CRITERION, question=question,response=response,statement=fact)
+                self_confidence_prompt = SELF_CONF_FORMAT_CONTINUE.format(criterion=CRITERION_CONTINUE, question=question,response=response,statement=fact)
                 self_confidence_response = responder.generate(self_confidence_prompt)
                 # print("self_confidence_response",self_confidence_response)
-                self_confidence_score = re.findall(r'\[\b[0-5]/5\b\]', self_confidence_response)
+                
+                # self_confidence_score = re.findall(r'\[\b[0-5]/5\b\]', self_confidence_response)
+                self_confidence_score = re.findall(r'\[\d\.\d{2}\]', self_confidence_response)
                 # self_confidence_score = re.compile(r'\b[0-5]/5\b').search(self_confidence_response).group()
                 if self_confidence_score:
                     break
@@ -180,8 +183,10 @@ for index, data in enumerate(json_data["per_prompt_data"]):
 
     # count = len(return_list)
     
-    with open('./results/selfconf-{}-findall.json'.format(main_config.responder_model_short), 'w') as outfile:
+    with open('./results/{}_FACT_CONF.json'.format(main_config.responder_model_short), 'w') as outfile:
         json.dump(return_list, outfile)
+
+    
 
     
 

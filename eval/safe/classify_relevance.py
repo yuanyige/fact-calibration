@@ -102,6 +102,8 @@ RESPONSE:
 STATEMENT:
 {_STATEMENT_PLACEHOLDER}
 """
+
+
 _REVISE_FORMAT = f"""\
 Vague references include but are not limited to:
 - Pronouns (e.g., "his", "they", "her")

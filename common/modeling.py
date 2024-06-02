@@ -218,7 +218,7 @@ class Model:
       )
     
     elif model_name in OPEN_SOURCE_TEMPLATE:
-      model = AutoModelForCausalLM.from_pretrained(path).to(device)
+      model = AutoModelForCausalLM.from_pretrained(path, device_map = 'auto')#.to(device)
       tokenizer = AutoTokenizer.from_pretrained(path)
       return {"model":model, "tokenizer":tokenizer}
     

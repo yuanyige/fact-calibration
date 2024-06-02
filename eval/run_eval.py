@@ -46,8 +46,8 @@ from eval.safe import search_augmented_factuality_eval as safe
 import openai
 
 openai.api_base = 'https://hb.rcouyi.com/v1'
-os.environ["HTTP_PROXY"] = "http://10.61.3.12:7788"
-os.environ["HTTPS_PROXY"] = "http://10.61.3.12:7788"
+# os.environ["HTTP_PROXY"] = "http://10.61.3.12:7788"
+# os.environ["HTTPS_PROXY"] = "http://10.61.3.12:7788"
 
 _RESULT_PATH = flags.DEFINE_string(
     'result_path', '', 'Path to the result file to eval.'
@@ -143,13 +143,13 @@ def evaluate_data(
       # if i<2:
       #   print("pass:",i)
       #   continue
-      if i==90:
+      if i == 300:
         break
       prompt_result_rated = add_rating_wrapped((prompt_result, i))
       result_data[_PER_PROMPT_DATA][i] = prompt_result_rated
       utils.save_json(out_path, result_data)
       utils.print_progress(
-          'Evaluated prompt data', i + 1, len(result_data[_PER_PROMPT_DATA])
+        'Evaluated prompt data', i + 1, len(result_data[_PER_PROMPT_DATA])
       )
 
 

@@ -271,6 +271,8 @@ def main(_) -> None:
 
   utils.print_info(f'Task used: {main_config.task}')
   data = load_data()
+  print("data",data)
+  # exit(0)
   utils.print_info(f'Side 1: {main_config.side_1}')
   utils.print_info(f'Side 2: {main_config.side_2}')
 

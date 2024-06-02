@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """All code for loading prompts and data."""
-
+import json
 import random
 from typing import Iterator, Optional
 
@@ -210,6 +210,18 @@ class DataPackage:
         self.force_load_data(longfact.load_longfact_objects())
       elif task == 'custom':
         self.force_load_data(prompts=DEFAULT_CUSTOM_PROMPTS)
+      elif task == 'asqa':
+        with open('/data1/yuanyige/datasets/ASQA.json', 'r') as file:
+          asqa_data = json.load(file)
+        ASQA_PROMPTS = []
+        for entry_id, entry_data in asqa_data['dev'].items():
+            ambiguous_question = entry_data.get('ambiguous_question', None)
+            if ambiguous_question:
+                ASQA_PROMPTS.append(ambiguous_question)
+        #print(len(ASQA_PROMPTS))
+        #exit(0)
+        #ASQA_PROMPTS=ASQA_PROMPTS[:300]
+        self.force_load_data(prompts=ASQA_PROMPTS)
       else:
         utils.maybe_print_error('Invalid task.')
         utils.stop_all_execution(True)

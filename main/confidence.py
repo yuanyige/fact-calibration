@@ -16,9 +16,7 @@ openai.api_base = 'https://hb.rcouyi.com/v1'
 os.environ["HTTP_PROXY"] = "http://10.61.3.12:7788"
 os.environ["HTTPS_PROXY"] = "http://10.61.3.12:7788"
 
-SAFE_result_path='./results/asqa/vicuna-13b_SAFE.json'
-
-# resume_result_path = './results/llama_2_13b_FACT_CONF.json'
+SAFE_result_path='./results/asqa/gpt_35_turbo_SAFE.json
 resume_result_path = None
 RESUME_BREAK_POINT = None
 

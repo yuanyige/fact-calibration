@@ -34,7 +34,8 @@ prompt_postamble = """\
 Provide as many specific details and examples as possible (such as names of \
 people, numbers, events, locations, dates, times, etc.)
 """
-openai_api_key = 'sk-Jx2ofLvAjiwJ7424520b16E4E1D543Df96D448F0243c5376' #'sk-sOGn1qPx9BfYXBsI1802A4191dC640E081B9183b8e200899' #
+#openai_api_key = 'sk-Jx2ofLvAjiwJ7424520b16E4E1D543Df96D448F0243c5376' #3.5
+openai_api_key = 'sk-tik3GorMTLN8wjA76b70EbEe88Ba481eBc1cFc4e00Fd063c' #4
 anthropic_api_key = ''
 serper_api_key = 'e5b6022e29be2b57b677ab842b228ced17aca7f7'
 random_seed = 1

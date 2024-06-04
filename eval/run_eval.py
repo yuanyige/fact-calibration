@@ -59,7 +59,7 @@ _EVAL_SIDE2 = flags.DEFINE_bool(
     'eval_side2', True, 'Whether to evaluate Side 2 response.'
 )
 _PARALLELIZE = flags.DEFINE_bool(
-    'parallelize', True, 'Whether to run eval in parallel.'
+    'parallelize', False, 'Whether to run eval in parallel.'
 )
 _MAX_CLAIM = flags.DEFINE_integer(
     'max_claim', -1, 'Maximum number of claims to consider when computing F1.'

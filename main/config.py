@@ -60,13 +60,13 @@ save_results = True
 #     'longchat-7b',
 # ]
 ################################################################################
-# responder_model_short = 'gpt_35_turbo'
-# path = None
-# device = None
+responder_model_short = 'gpt_35_turbo'
+path = None
+device = None
 
-responder_model_short = 'vicuna-13b'
-path = '/data1/culture/'
-device = 'cuda'
+# responder_model_short = 'vicuna-13b'
+# path = '/data1/culture/'
+# device = 'cuda'
 
 ################################################################################
 #                               DEBUG SETTINGS
@@ -92,7 +92,7 @@ show_responder_responses = False
 ################################################################################
 task_short = 'asqa'
 shuffle_data = False
-max_num_examples = 300
+max_num_examples = 30000000
 add_universal_postamble = True
 
 ################################################################################

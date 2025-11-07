@@ -563,7 +563,7 @@ An improvement implies:
 
 A regression implies:
 1. Introduction of erroneous or inaccurate information,
-2。 Lower relevance to the question,
+2. Lower relevance to the question,
 3. Repetition or introduction of information that is already provided with other facts in ALL FACTS.
 
 Special attention should be paid to ensuring that a good modification does not overly repeat or directly copy information from other facts in ALL FACTS.
